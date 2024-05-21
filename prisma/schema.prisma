@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Cliente {
+  id         Int     @id @default(autoincrement())
+  descricao  String  @db.VarChar(250)
+  site       String? @db.VarChar(250)
+  cpf_cnpj   String? @db.VarChar(20)
+  observacao String  @db.LongText()
+
+  ativo       Boolean
+  endereco_id Int?
+
+  endereco Endereco? @relation(name: "FK_Endereco_endereco_id", fields: [endereco_id], references: [id])
+
+  usuarios Usuario[] @relation(name: "FK_Usuario_cliente_id")
+
+  @@map("clientes")
+}
+
+model Endereco {
+  id              Int     @id @default(autoincrement())
+  cep             String? @db.VarChar(9)
+  endereco        String? @db.VarChar(50)
+  endereco_numero String? @db.VarChar(6)
+  complemento     String? @db.VarChar(100)
+  bairro          String? @db.VarChar(50)
+  cidade          String? @db.VarChar(50)
+  uf              String? @db.VarChar(2)
+
+  clientes Cliente[] @relation(name: "FK_Endereco_endereco_id")
+
+  @@map("enderecos")
+}
+
+model Usuario {
+  id            Int      @id @default(autoincrement())
+  nome          String   @db.VarChar(100)
+  login         String   @db.VarChar(80)
+  senha         String   @db.VarChar(100)
+  email         String?  @db.VarChar(250)
+  perfil        Int
+  ativo         Boolean
+  observacao    String?  @db.VarChar(255) // Para longText usar @db.LongText()
+  criado_em     DateTime @default(now())
+  atualizado_em DateTime @default(now())
+  cliente_id    Int
+
+  cliente Cliente? @relation(name: "FK_Usuario_cliente_id", fields: [cliente_id], references: [id])
+
+  @@map("usuarios")
+}
